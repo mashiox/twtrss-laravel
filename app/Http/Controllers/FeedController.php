@@ -26,7 +26,9 @@ class FeedController extends Controller
      */
     public function create()
     {
-        //
+        return view('item-create-v0', [
+            'item' => null,
+        ]);
     }
 
     /**
@@ -38,6 +40,20 @@ class FeedController extends Controller
     public function store(Request $request)
     {
         //
+        $rssData = $this->getRSSData();
+        // $item = $this->buildRSSItem($item);
+        $item = $rssData->channel->addChild('item');
+        $item->id = _ulid();
+        $item->title = $_POST['title'];
+        $item->link = $_POST['link'];
+        $item->description = $_POST['description'];
+        $item->author = $_POST['author'];
+        $pubDate = new \DateTime($_POST['pubDate']);
+        $item->pubDate = $pubDate->format(\DateTimeInterface::RSS);
+
+        $this->setRSSData($rssData);
+        return redirect('/feed');
+
     }
 
     /**
@@ -59,6 +75,7 @@ class FeedController extends Controller
      */
     public function edit($id)
     {
+        $x = 1;
         //
         return view('item-editor-v0', [
             'item' => $this->getRssItemByGuid( $this->getRSSData(), $id ),
@@ -79,20 +96,25 @@ class FeedController extends Controller
         $item->title = $_POST['title'];
         $item->link = $_POST['link'];
         $item->description = $_POST['description'];
+        $item->author = $_POST['author'];
+        $pubDate = new \DateTime(sprintf('%s %s', $_POST['pubDate0'], $_POST['pubDate1']));
+        $item->pubDate = $pubDate->format(\DateTimeInterface::RSS);
+
         $rssData = $this->updateRssItemByGuid($item);
-        echo '<pre>';
-        // var_dump($_POST);
-        // var_dump($request);
-        var_dump($rssData->asXML()); die;
+        $this->setRSSData($rssData);
+        return redirect('/feed');
     }
 
     protected function updateRssItemByGuid(SimpleXMLElement $item) : ?SimpleXMLElement
     {
         $rssData = $this->getRSSData();
         foreach ($rssData->channel->item as $idx => $i0) {
-            if ($i0->guid === $item->guid) {
-                // $rssData->channel->item[ $idx ] = $item;
-                $rssData->channel->item[$idx] = $rssData->addChild('item', (string) $item);
+            if (0 === strcmp($i0->guid, $item->guid)) {
+                $i0->title = $item->title;
+                $i0->link = $item->link;
+                $i0->description = $item->description;
+                $i0->author = $item->author;
+                $i0->pubDate = $item->pubDate;
             }
         }
         return $rssData;
@@ -118,7 +140,7 @@ class FeedController extends Controller
         }
         return $rssData;
     }
-    protected function getRssItemByGuid(SimpleXMLElement $rssData, string $guid): ?SimpleXMLElement
+    protected function getRssItemByGuid(SimpleXMLElement $rssData, string $guid) : ?SimpleXMLElement
     {
         // Loop through each item in the channel
         foreach ($rssData->channel->item as $item) {
@@ -133,4 +155,32 @@ class FeedController extends Controller
         return null;
     }
 
+    protected function setRSSData(SimpleXMLElement $rssData) : bool
+    {
+        $file = sprintf("%s/var/rss.xml", $_ENV['APP_ROOT']);
+        return $rssData->asXML($file);
+    }
+
+    protected function buildRSSItem(string $id = null) : ?SimpleXMLElement
+    {
+        if ($id) {
+            $item = $this->getRssItemByGuid( $this->getRSSData(), $id );
+        } else {
+            $item = new SimpleXMLElement;
+            $item->id = _ulid();
+        }
+        $item->title = $_POST['title'];
+        $item->link = $_POST['link'];
+        $item->description = $_POST['description'];
+        $item->author = $_POST['author'];
+        if ($_POST['pubdate']) {
+            $pubDate = new \DateTime($_POST['pubDate']);
+            $pubDate = $pubDate->format(\DateTimeInterface::RSS);
+        } else {
+            $pubDate = new \DateTime(sprintf('%s %s', $_POST['pubDate0'], $_POST['pubDate1']));
+            $pubDate = $pubDate->format(\DateTimeInterface::RSS);
+        }
+        $item->pubDate = $pubDate;
+        return $item;
+    }
 }

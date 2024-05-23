@@ -28,6 +28,7 @@
 <body>
 <div class="feed-container">
         <h1>Latest Updates</h1>
+        <a href="{{ route('feed.create') }}" class="btn btn-primary" style="align-self: flex-end;">&plus; Create</a>
         @if (isset($rssData) && !empty($rssData))
             @foreach ($rssData->channel->item as $item)
                 <div class="feed-item">
@@ -38,6 +39,9 @@
                         <a href="{{ $item->link }}">{{ $item->title }}</a>
                         <a href="/feed/{{ $item->guid }}/edit" style="float: right; font-size: 0.8rem; margin-left: 5px;">Edit</a>
                     </h2>
+                    @if (isset($item->author))
+                    <span>by <i>{{ $item->author }}</i></span>
+                    @endif
                     <p>{{ $item->description }}</p>
                 </div>
             @endforeach
@@ -47,3 +51,4 @@
     </div>
 </body>
 </html>
+`
