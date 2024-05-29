@@ -59,7 +59,7 @@
                     <span class="error">{{ $message }}</span>
                 @enderror
             </div>
-            <button type="submit">Create</button>
+            <button type="submit" name="a" value="rss-item-create">Create</button>
         </form>
     </div>
 </body>

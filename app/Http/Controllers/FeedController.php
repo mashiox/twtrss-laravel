@@ -12,10 +12,14 @@ class FeedController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        return view('feed-v0', [
+        $act = $request->query('a');
+        $x = ($act === 'edit-feed');
+        return view('feed-v1', [
             'rssData' => $this->getRSSData(),
+            'active_feed' => $this->getRssFile(),
+            'active_edit_feed' => $x,
         ]);
     }
 
@@ -41,6 +45,21 @@ class FeedController extends Controller
     {
         //
         $rssData = $this->getRSSData();
+        if ('save-feed' == $_POST['a']) {
+            $x = 1;
+            $rssData->channel->title = $_POST['title'];
+            $rssData->channel->link = $_POST['link'];
+            $rssData->channel->description = $_POST['description'];
+            $rssData->channel->managingEditor = $_POST['managingEditor'];
+            $rssData->channel->webMaster = $_POST['webMaster'];
+            $d0 = new \DateTime('now');
+            $rssData->channel->pubDate = $d0->format(\DateTimeInterface::RSS);
+            $rssData->channel->lastBuildDate = $rssData->channel->pubDate;
+            $rssData->channel->generator = 'https://github.com/mashiox/twtrss-laravel';
+            $rssData->channel->language = 'en-US';
+            $this->setRSSData($rssData);
+            return redirect('/feed');
+        }
         // $item = $this->buildRSSItem($item);
         $item = $rssData->channel->addChild('item');
         $item->id = _ulid();
@@ -134,6 +153,8 @@ class FeedController extends Controller
     protected function getRSSData() : ?SimpleXMLElement
     {
         $file = sprintf("%s/var/rss.xml", $_ENV['APP_ROOT']);
+        $file = session('active-feed', $file);
+        $file = $this->getRssFile();
         if (is_file($file)) {
             $raw = file_get_contents($file);
             $rssData = new SimpleXMLElement($raw);
@@ -154,10 +175,18 @@ class FeedController extends Controller
         // No matching item found, return null
         return null;
     }
+    protected function getRssFile()
+    {
+        $file = sprintf("%s/var/rss.xml", $_ENV['APP_ROOT']);
+        $file = session('active-feed', $file);
+        return $file;
+    }
 
     protected function setRSSData(SimpleXMLElement $rssData) : bool
     {
         $file = sprintf("%s/var/rss.xml", $_ENV['APP_ROOT']);
+        $file = session('active-feed', $file);
+        $file = $this->getRssFile();
         return $rssData->asXML($file);
     }
 
