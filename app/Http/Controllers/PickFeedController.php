@@ -14,8 +14,11 @@ class PickFeedController extends Controller
     public function index(Request $request)
     {
         //
+        $file_list = sprintf("%s/var/*.xml", env('APP_ROOT'));
+        $file_list = glob($file_list);
         return view('pick-feed-v0', [
             'active_feed' => $request->session()->get('active-feed', '-none-'),
+            'file_list' => $file_list,
         ]);
     }
 
