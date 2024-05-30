@@ -36,11 +36,6 @@
                     <option value="{{ $file }}">{{ $file }}</option>
                     @endif
                 @endforeach
-<!--
-                    <option value="/opt/twtrss/twtrss-laravel/var/rss.xml">/opt/twtrss/twtrss-laravel/var/rss.xml</option>
-                    <option value="/opt/twtrss/twtrss-laravel/var/news.xml">/opt/twtrss/twtrss-laravel/var/news.xml</option>
-                    <option value="/opt/twtrss/twtrss-laravel/var/tweets.xml">/opt/twtrss/twtrss-laravel/var/tweets.xml</option>
--->
                 </select>
                 @error('title')
                     <span class="error">{{ $message }}</span>
