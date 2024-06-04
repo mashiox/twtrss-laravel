@@ -28,10 +28,16 @@
     margin-top: 20px;
     border-radius: 5px;
     box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
-    display: none;
     }
     .item-card h2 {
     margin-bottom: 10px;
+    }
+    .back-button {
+      text-align: right;
+      margin-bottom: 10px;
+    }
+    .hidden {
+        display: none;
     }
   </style>
 </head>
@@ -40,9 +46,13 @@
     <h1>RSS Feed</h1>
     <ul class="feed-list"></ul>
     <div class="item-card hidden">
-      <h2></h2>
+    <a href="#" class="link">
+        <h2 class="title"></h2>
+    </a>
       <p class="description"></p>
-      <a href="#" class="link">View Source</a>
+      <div class="back-button">
+        <button>Back to Feed</button>
+      </div>
     </div>
   </div>
 </body>
@@ -67,24 +77,56 @@ $(document).ready(function() {
       const title = $(this).find("title").text();
       const description = $(this).find("description").text();
       const link = $(this).find("link").text();
+      const guid = $(this).find("guid").text(); // Assuming your feed has a "guid" element
+      const json = JSON.stringify({title: title, description: description, link: link, guid: guid});
 
       const listItem = $(`
-      <li>
+      <li data-guid="${guid}">
         <h3><a href="${link}" target="_blank">${title}</a></h3>
         <p>${description}</p>
+        <input type="hidden" id="json-${guid}" data-guid="${guid}" value='${json}' />
       </li>
       `);
 
       listItem.click(function() {
-        $(".item-card h2").text(title);
-        $(".item-card .description").text(description);
-        $(".item-card .link").attr("href", link);
+        const selectedGuid = $(this).data("guid");
+        const itemUrl = `?guid=${selectedGuid}`; // Construct the URL with the GUID
+
+        // 1. Prevent default click behavior and change URL using history.pushState
+        event.preventDefault();
+        history.pushState(null, null, itemUrl);
+
+        // 2. Update content based on selected item (placeholder for now)
+        updateItemDetails(selectedGuid);
+
+        // 3. Hide feed list and show item card
+        $(".feed-list").hide();
         $(".item-card").removeClass("hidden");
       });
 
       $(".feed-list").append(listItem);
+
     });
   }
+
+  function updateItemDetails(guid) {
+    // Implement logic here to fetch details based on the provided guid
+    // Update the content of .item-card elements with the fetched details (title, description, etc.)
+    console.log("Item details for GUID:", guid); // Placeholder for actual implementation
+    var json = $('#json-' + guid);
+    var data = json.val();
+    data = JSON.parse(data);
+    $('.item-card .title').text(data.title);
+    $('.item-card .description').text(data.description);
+    $('.item-card .link').attr('href', data.link);
+  }
+
+  // Back button functionality (assuming history.back() is not desired)
+  $(".back-button button").click(function() {
+    history.pushState(null, null, window.location.origin + window.location.pathname);
+    $(".feed-list").show();  // Show feed list again
+    $(".item-card").addClass("hidden"); // Hide item card
+  });
 });
 
 </script>
