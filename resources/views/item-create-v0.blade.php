@@ -25,8 +25,18 @@
         <form action="/feed" method="POST">
             @csrf
             <div class="editor-field">
+            <label for="title">GUID:</label>
+                <span class="form-prepend">
+                    <input type="checkbox" id="enable-guid">
+                </span>
+                <input disabled type="text" name="guid" id="guid" style="width: 458px;" value="{{ old('guid') }}">
+                @error('guid')
+                    <span class="error">{{ $message }}</span>
+                @enderror
+            </div>
+            <div class="editor-field">
                 <label for="title">Title:</label>
-                <input type="text" name="title" id="title" style="width: 478px;" value="{{ old('title') }}">
+                <input type="text" name="title" id="title" style="width: 478px;" required value="{{ old('title') }}">
                 @error('title')
                     <span class="error">{{ $message }}</span>
                 @enderror
@@ -40,7 +50,7 @@
             </div>
             <div class="editor-field">
                 <label for="author">Author:</label>
-                <input type="text" name="author" id="author" style="width: 478px;" value="{{ old('author') }}">
+                <input type="text" name="author" id="author" style="width: 478px;" required value="{{ old('author') }}">
                 @error('author')
                     <span class="error">{{ $message }}</span>
                 @enderror
@@ -64,3 +74,8 @@
     </div>
 </body>
 </html>
+<script>
+document.getElementById('enable-guid').addEventListener('change', function() {
+  document.getElementById('guid').disabled = !this.checked;
+});
+</script>

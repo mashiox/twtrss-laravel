@@ -60,9 +60,19 @@ class FeedController extends Controller
             $this->setRSSData($rssData);
             return redirect('/feed');
         }
+
         // $item = $this->buildRSSItem($item);
         $item = $rssData->channel->addChild('item');
-        $item->id = _ulid();
+        $item->guid = _ulid();
+        if (isset($_POST['guid'])) {
+            $item0 = $this->getRssItemByGuid($rssData, $_POST['guid']);
+            if (empty($item0)) {
+                $item->guid = $_POST['guid'];
+            } else {
+                // @todo add session flash
+                die('GUID is not unique [CFC-073]');
+            }
+        }
         $item->title = $_POST['title'];
         $item->link = $_POST['link'];
         $item->description = $_POST['description'];
